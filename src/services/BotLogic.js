@@ -31,8 +31,11 @@ Voici le programme *WADAGNI-TALATA* expliqué simplement :
 7- *Après le 12 avril 2026* (Ce qui change pour moi)
 8- *Mes difficultés aujourd'hui*
 9- *Résumé du programme de société*
+10- *Mes engagements avec le peuple Béninois*
 
-👉 *Choisis un numéro entre 1 et 9* pour continuer`;
+👉 *Choisis un numéro entre 1 et 10* pour continuer
+
+📍 Tape *tournée* pour suivre les meetings en direct`;
 
 const MENU_RETOUR = `\n\n─────────────────\n👉 Tape *0* pour revenir au menu principal`;
 
@@ -535,6 +538,46 @@ Que chaque Béninois ressente concrètement le changement dans sa vie quotidienn
 1- *Oui* — Rendez-vous le 12 Avril 2026 ✅
 2- *Je souhaite relire le programme* 📖`;
 
+const SECTION_10 = `10- *MES ENGAGEMENTS AVEC LE PEUPLE BÉNINOIS*
+
+Si le peuple béninois me fait confiance le *12 avril 2026*, je m'engage solennellement à :
+
+🤝 *1. Gouverner avec transparence*
+→ Des comptes rendus réguliers à la nation sur l'utilisation de chaque franc public.
+
+🏥 *2. Rendre les soins d'urgence gratuits*
+→ Personne ne doit mourir faute d'argent dans nos hôpitaux.
+
+📚 *3. Former 500 000 jeunes*
+→ Aux métiers du numérique, de l'industrie et des services d'ici 2028.
+
+🌾 *4. Doubler les revenus des agriculteurs*
+→ Par la transformation locale et l'organisation des filières.
+
+🏗️ *5. Finir les infrastructures commencées*
+→ Routes, eau potable, électricité — jusqu'aux derniers villages.
+
+💻 *6. Digitaliser 100% des services publics*
+→ Actes d'état civil, certificats, permis — obtenables depuis ton téléphone.
+
+🛡️ *7. Protéger les plus vulnérables*
+→ ARCH renforcé, allocations sociales élargies, personnes handicapées prises en compte.
+
+🌍 *8. Placer le Bénin sur la scène africaine*
+→ Tourisme, culture, diplomatie économique au service du peuple.
+
+🗳️ *9. Respecter la Constitution et les libertés*
+→ Un mandat au service du peuple, avec des institutions fortes et indépendantes.
+
+💬 *10. Consulter le peuple régulièrement*
+→ Des assemblées citoyennes pour que ta voix continue d'être entendue.
+
+---
+
+*Ces engagements sont ma parole donnée. Le 12 avril 2026, tu décides.*
+
+🗳️ Rendez-vous le *12 Avril 2026* !`;
+
 const MSG_OUI = `✅ *Merci pour ton soutien !*
 
 Tu as dit *OUI* au programme WADAGNI-TALATA.
@@ -583,6 +626,12 @@ class BotLogic {
                 return this.showMainMenu(client, fullId);
             }
 
+            // ── Mot-clé spécial : Tournée ─────────────────────────────────────
+            const textLower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            if (textLower === 'tournee' || textLower === 'tournée' || textLower === 'meeting' || textLower === 'meetings') {
+                return this.showTourneeMenu(client, fullId);
+            }
+
             // ── Premier message / Menu Principal ─────────────────────────────
             if (!currentFlow || currentFlow === 'main_menu') {
                 // Enregistrer l'utilisateur si nouveau (et envoyer image si 1er contact)
@@ -603,6 +652,7 @@ class BotLogic {
                 if (text === '7') return this.showSection7Menu(client, fullId);
                 if (text === '8') return this.showSection8Menu(client, fullId);
                 if (text === '9') return this.showSection9(client, fullId);
+                if (text === '10') return this.showSection10(client, fullId);
 
                 // Aucune option valide → afficher menu
                 return this.showMainMenu(client, fullId);
@@ -616,6 +666,8 @@ class BotLogic {
                     return this.handleSection8(client, fullId, text);
                 case 'section_9':
                     return this.handleSection9Vote(client, fullId, text);
+                case 'section_tournee':
+                    return this.handleTourneeChoice(client, fullId, text);
                 default:
                     stateService.clearState(from);
                     return this.showMainMenu(client, fullId);
@@ -802,6 +854,104 @@ class BotLogic {
         } else {
             return client.sendMessage(fullId, '❌ Envoie *1* (Oui) ou *2* (Relire) pour continuer.');
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SECTION 10 — MES ENGAGEMENTS
+    // ─────────────────────────────────────────────────────────────────────────
+
+    async showSection10(client, fullId) {
+        const from = this.normalizeId(fullId);
+        stateService.setState(from, 'main_menu', 'selection');
+        return client.sendMessage(fullId, SECTION_10 + MENU_RETOUR);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SECTION TOURNÉE — MEETINGS EN DIRECT
+    // ─────────────────────────────────────────────────────────────────────────
+
+    async showTourneeMenu(client, fullId) {
+        const from = this.normalizeId(fullId);
+        const localities = persistence.getAllLocalities();
+
+        const dayLabels = {
+            J01: 'Ven. 27 Mars', J02: 'Sam. 28 Mars', J03: 'Dim. 29 Mars',
+            J04: 'Lun. 30 Mars', J05: 'Mar. 31 Mars', J06: 'Jeu. 2 Avr.',
+            J07: 'Ven. 3 Avr.',  J08: 'Sam. 4 Avr.',  J09: 'Lun. 6 Avr.',
+            J10: 'Mar. 7 Avr.',  J12: 'Ven. 10 Avr. \uD83C\uDFC1'
+        };
+
+        // Grouper par jour
+        const byDay = {};
+        for (const loc of localities) {
+            if (!byDay[loc.day]) byDay[loc.day] = [];
+            byDay[loc.day].push(loc);
+        }
+
+        let menuText = `\uD83D\uDCCD *TOURN\u00C9E WADAGNI-TALATA*\n_26 mars \u2192 10 avril 2026_\n\n`;
+        menuText += `Choisis un num\u00E9ro pour lire le r\u00E9sum\u00E9 d'un meeting :\n\n`;
+
+        for (const [dayKey, items] of Object.entries(byDay)) {
+            menuText += `*\u2014 ${dayLabels[dayKey] || dayKey} \u2014*\n`;
+            for (const loc of items) {
+                menuText += `${loc.id}- ${loc.name}\n`;
+            }
+            menuText += `\n`;
+        }
+
+        menuText += `\uD83D\uDC49 Envoie un num\u00E9ro entre *1 et 49*`;
+        menuText += `\n\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\uD83D\uDC49 Tape *0* pour revenir au menu principal`;
+
+        stateService.setState(from, 'section_tournee', 'choose_locality');
+        return client.sendMessage(fullId, menuText);
+    }
+
+    async handleTourneeChoice(client, fullId, text) {
+        const from = this.normalizeId(fullId);
+        const num = parseInt(text, 10);
+
+        if (isNaN(num) || num < 1 || num > 49) {
+            return client.sendMessage(fullId,
+                `\u274C Option invalide. Envoie un num\u00E9ro entre *1 et 49*, ou tape *0* pour revenir au menu principal.`
+            );
+        }
+
+        const locality = persistence.getLocality(num);
+        if (!locality) {
+            return client.sendMessage(fullId, `\u274C Localit\u00E9 introuvable. Tape *0* pour revenir.`);
+        }
+
+        const meetingData = persistence.getMeetingContent(num);
+
+        const dayLabels = {
+            J01: 'Vendredi 27 Mars 2026',   J02: 'Samedi 28 Mars 2026',
+            J03: 'Dimanche 29 Mars 2026',    J04: 'Lundi 30 Mars 2026',
+            J05: 'Mardi 31 Mars 2026',       J06: 'Jeudi 2 Avril 2026',
+            J07: 'Vendredi 3 Avril 2026',    J08: 'Samedi 4 Avril 2026',
+            J09: 'Lundi 6 Avril 2026',       J10: 'Mardi 7 Avril 2026',
+            J12: 'Vendredi 10 Avril 2026 \uD83C\uDFC1'
+        };
+
+        let response = `\uD83D\uDCCD *Meeting #${locality.meeting_number} \u2014 ${locality.name}*\n`;
+        response += `\uD83D\uDDD3\uFE0F ${dayLabels[locality.day] || locality.day}\n`;
+        response += `\uD83C\uDFDB\uFE0F D\u00E9partement : ${locality.department}\n`;
+        response += `\uD83D\uDCCA Taille : ${locality.meeting_size}\n\n`;
+        response += `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n`;
+
+        if (meetingData && meetingData.content) {
+            response += `*Ce qu'il a dit :*\n\n${meetingData.content}`;
+            const updatedAt = new Date(meetingData.updated_at).toLocaleDateString('fr-FR', {
+                day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
+            });
+            response += `\n\n_Mis \u00E0 jour le ${updatedAt}_`;
+        } else {
+            response += `\u23F3 *Le r\u00E9sum\u00E9 de ce meeting n'est pas encore disponible.*\n\nReviens plus tard ou explore le programme !`;
+        }
+
+        response += `\n\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\uD83D\uDC49 Envoie un autre num\u00E9ro (1-49) ou tape *0* pour revenir`;
+
+        stateService.setState(from, 'section_tournee', 'choose_locality');
+        return client.sendMessage(fullId, response);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
