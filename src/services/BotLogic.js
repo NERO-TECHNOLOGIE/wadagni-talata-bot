@@ -31,11 +31,9 @@ Voici le programme *WADAGNI-TALATA* expliqué simplement :
 7- *Après le 12 avril 2026* (Ce qui change pour moi)
 8- *Mes difficultés aujourd'hui*
 9- *Résumé du programme de société*
-10- *Mes engagements avec le peuple Béninois*
+10- *Mes engagements & la tournée* (Actualité du terrain)
 
-👉 *Choisis un numéro entre 1 et 10* pour continuer
-
-📍 Tape *tournée* pour suivre les meetings en direct`;
+👉 *Choisis un numéro entre 1 et 10* pour continuer`;
 
 const MENU_RETOUR = `\n\n─────────────────\n👉 Tape *0* pour revenir au menu principal`;
 
@@ -652,7 +650,7 @@ class BotLogic {
                 if (text === '7') return this.showSection7Menu(client, fullId);
                 if (text === '8') return this.showSection8Menu(client, fullId);
                 if (text === '9') return this.showSection9(client, fullId);
-                if (text === '10') return this.showSection10(client, fullId);
+                if (text === '10') return this.showTourneeMenu(client, fullId);
 
                 // Aucune option valide → afficher menu
                 return this.showMainMenu(client, fullId);
@@ -888,8 +886,18 @@ class BotLogic {
             byDay[loc.day].push(loc);
         }
 
-        let menuText = `\uD83D\uDCCD *TOURN\u00C9E WADAGNI-TALATA*\n_26 mars \u2192 10 avril 2026_\n\n`;
-        menuText += `Choisis un num\u00E9ro pour lire le r\u00E9sum\u00E9 d'un meeting :\n\n`;
+        let menuText = `📍 *MES ENGAGEMENTS & LA TOURNÉE*\n\n`;
+        
+        menuText += `*Mes Engagements :*\n`;
+        menuText += `1. Gouvernance transparente\n`;
+        menuText += `2. Urgences de santé gratuites\n`;
+        menuText += `3. Formation de 500 000 jeunes\n`;
+        menuText += `4. Transformation de l'agriculture\n`;
+        menuText += `5. Infrastructures et services partout\n`;
+        menuText += `... _(Plus de détails après l'élection le 12 avril)_\n\n`;
+        
+        menuText += `*— Tournée de campagne —*\n`;
+        menuText += `Choisis le numéro d'une ville (1-49) pour lire ce qui s'y est dit :\n\n`;
 
         for (const [dayKey, items] of Object.entries(byDay)) {
             menuText += `*\u2014 ${dayLabels[dayKey] || dayKey} \u2014*\n`;
